@@ -1,7 +1,7 @@
 import { prisma } from "../../lib/prisma";
 import { Prisma, User, Category } from "../../../generated/prisma/client";
 
-// CATEGORY SERVICES
+
 const createCategory = async (data: Prisma.CategoryCreateInput): Promise<Category> => {
   return prisma.category.create({ data });
 };
@@ -10,7 +10,6 @@ const getAllCategories = async (): Promise<Category[]> => {
   return prisma.category.findMany();
 };
 
-// USER SERVICES
 const getAllUsers = async (): Promise<User[]> => {
   return prisma.user.findMany({
     select: {
@@ -38,10 +37,25 @@ const updateMedicineStatus = async (medicineId: string, status: "AVAILABLE" | "U
     data: { status },
   });
 };
+
+const approveMedicine = async (medicineId: string, adminId: string) => {
+  return prisma.medicine.update({
+    where: { id: medicineId },
+    data: {
+      isApproved: true,
+      approvedBy: adminId,
+      approvedAt: new Date(),
+    },
+  });
+};
+
 export const AdminService = {
   createCategory,
   getAllCategories,
   getAllUsers,
     updateUserStatus,
-  updateMedicineStatus
+  updateMedicineStatus,
+  approveMedicine
+
+
 };

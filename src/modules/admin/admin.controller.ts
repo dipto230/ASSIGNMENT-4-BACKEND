@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { AdminService } from "./admin.service";
 
-// CATEGORY CONTROLLER
+
 const addCategory = async (req: Request, res: Response) => {
   try {
     const category = await AdminService.createCategory(req.body);
@@ -20,7 +20,7 @@ const getCategories = async (req: Request, res: Response) => {
   }
 };
 
-// USER CONTROLLER
+
 const getUsers = async (req: Request, res: Response) => {
   try {
     const users = await AdminService.getAllUsers();
@@ -43,19 +43,31 @@ const updateUserStatus = async (req: Request, res: Response) => {
   }
 };
 
-const updateMedicineStatus = async (req: Request, res: Response) => {
+const updateMedicineStatus = async (req: any, res: Response) => {
   try {
     const { status } = req.body;
+
+    
+    if (status === "APPROVE") {
+      const medicine = await AdminService.approveMedicine(req.params.id, req.user.id);
+      return res.json(medicine);
+    }
+
+    
     if (!["AVAILABLE", "UNAVAILABLE"].includes(status)) {
       return res.status(400).json({ error: "Invalid status" });
     }
 
-    const medicine = await AdminService.updateMedicineStatus(req.params.id, status as "AVAILABLE" | "UNAVAILABLE");
+    const medicine = await AdminService.updateMedicineStatus(
+      req.params.id,
+      status as "AVAILABLE" | "UNAVAILABLE"
+    );
     res.json(medicine);
   } catch (e) {
     res.status(400).json({ error: "Failed to update medicine status", details: e });
   }
 };
+
 export const AdminController = {
   addCategory,
   getCategories,
