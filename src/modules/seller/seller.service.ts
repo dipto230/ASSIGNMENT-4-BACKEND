@@ -5,17 +5,23 @@ import { OrderStatus, Prisma } from "../../../generated/prisma/client";
 
 const createMedicine = async (
   sellerId: string,
-  data: Prisma.MedicineCreateInput
+  data: Omit<Prisma.MedicineUncheckedCreateInput, 'sellerId'>
 ) => {
+  if (!data.categoryId) {
+    throw new Error("categoryId is required to create a medicine");
+  }
+
   return prisma.medicine.create({
     data: {
       ...data,
-      seller: { connect: { id: sellerId } },
-      isApproved: false, 
+      sellerId,        
+      isApproved: false,
       isActive: true,
     },
   });
 };
+
+
 
 const updateMedicine = async (
   medicineId: string,

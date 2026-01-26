@@ -1,13 +1,18 @@
 import express, { Application } from "express";
 
 import { toNodeHandler } from "better-auth/node";
-import { postRouter } from "./modules/seller/seller.routes";
+import { SellerRouter } from "./modules/seller/seller.routes";
+import { auth } from "./lib/auth";
+import { AdminRouter } from "./modules/admin/admin.routes";
+
 
 
 const app: Application = express();
 app.use(express.json());
+app.all("/api/auth/*splat", toNodeHandler(auth));
 
-app.use("/posts", postRouter)
+app.use("/api/seller", SellerRouter);
+app.use("/api/admin", AdminRouter);
  
 
 app.get("/", (req, res) => {
