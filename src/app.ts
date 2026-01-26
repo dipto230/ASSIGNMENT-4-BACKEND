@@ -1,19 +1,17 @@
-import express, { Application } from "express"
+import express, { Application } from "express";
 
-const cors = require("cors");
-const morgan = require("morgan");
-const cookieParser = require("cookie-parser");
+import { toNodeHandler } from "better-auth/node";
+import { postRouter } from "./modules/seller/seller.routes";
+
 
 const app: Application = express();
-app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
-app.use(morgan("dev"));
-app.use(cookieParser());
 
-app.use("/api/auth", require("./routes/auth.routes"));
-
+app.use("/posts", postRouter)
+ 
 
 app.get("/", (req, res) => {
-    res.send("Hello Assignment 4")
-})
+  res.send("Hello Assignment 4");
+});
+
 export default app;
