@@ -22,14 +22,15 @@ model User {
   role     Role       @default(CUSTOMER)
   status   UserStatus @default(ACTIVE)
 
-  medicines Medicine[] 
-  orders    Order[] 
+  medicines Medicine[]
+  orders    Order[]
   reviews   Review[]
   cart      CartItem[]
 
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  orderItems OrderItem[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  orderItems    OrderItem[]
+  refreshTokens RefreshToken[]
 }
 
 model Category {
@@ -166,4 +167,15 @@ enum PaymentMethod {
 enum PaymentStatus {
   PENDING
   PAID
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
 }
