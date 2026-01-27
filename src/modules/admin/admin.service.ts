@@ -61,13 +61,32 @@ const approveMedicine = async (medicineId: string, adminId: string) => {
   });
 };
 
+const getAllOrders = async () => {
+  return prisma.order.findMany({
+    include: {
+      user: { select: { id: true, name: true, email: true } },
+      items: {
+        include: {
+          medicine: true,
+          seller: { select: { id: true, name: true } },
+        },
+      },
+      shipping: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+};
+
+
 export const AdminService = {
   createCategory,
   getAllCategories,
   getAllUsers,
     updateUserStatus,
   updateMedicineStatus,
-  approveMedicine
+  approveMedicine,
+  updateMedicineAvailability,
+  getAllOrders
 
 
 };
