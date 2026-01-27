@@ -93,6 +93,22 @@ const updateProfile = async (req: AuthRequest, res: Response) => {
   }
 };
 
+const getProfile = async (req: AuthRequest, res: Response) => {
+  try {
+    const user = await CustomerService.getProfile(req.user!.id);
+    res.json({
+      success: true,
+      message: "Profile fetched successfully",
+      data: user,
+    });
+  } catch (e) {
+    res.status(400).json({ success: false, message: "Failed to fetch profile", details: e });
+  }
+};
+
+
+
+
 export const CustomerController = {
   getCart,
   addToCart,
@@ -102,5 +118,6 @@ export const CustomerController = {
   getOrders,
   getOrderById,
   addReview,
-  updateProfile
+  updateProfile,
+  getProfile
 };

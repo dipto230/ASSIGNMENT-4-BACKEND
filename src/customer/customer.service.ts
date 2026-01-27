@@ -129,6 +129,21 @@ for (const item of cartItems) {
       role: true,
     },
   });
+  },
+  
+  getProfile: async (userId: string) => {
+  return prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      image: true,
+      role: true,
+    },
+  });
 },
+
 
 };

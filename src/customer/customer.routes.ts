@@ -19,6 +19,8 @@ router.post("/orders", CustomerController.placeOrder);
 router.get("/orders", CustomerController.getOrders);
 router.get("/orders/:id", CustomerController.getOrderById);
 
+router.get("/profile", CustomerController.getProfile);
+
 router.patch("/profile", CustomerController.updateProfile);
 
 
