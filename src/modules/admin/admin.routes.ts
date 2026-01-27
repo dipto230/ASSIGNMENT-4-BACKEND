@@ -17,5 +17,9 @@ router.get("/users", AdminController.getUsers);
 router.patch("/users/:id/status", AdminController.updateUserStatus);
 
 router.patch("/medicines/:id/status", AdminController.updateMedicineStatus);
+router.patch("/medicines/:id/availability", AdminController.updateMedicineAvailability);
+
+router.get("/orders", AdminController.getAllOrders);
+
 
 export const AdminRouter = router;

@@ -67,11 +67,41 @@ const updateMedicineStatus = async (req: any, res: Response) => {
     res.status(400).json({ error: "Failed to update medicine status", details: e });
   }
 };
+const updateMedicineAvailability = async (req: Request, res: Response) => {
+  try {
+    const { status } = req.body;
+
+    if (!["AVAILABLE", "UNAVAILABLE"].includes(status)) {
+      return res.status(400).json({ error: "Invalid status" });
+    }
+
+    const medicine = await AdminService.updateMedicineAvailability(
+      req.params.id,
+      status as "AVAILABLE" | "UNAVAILABLE"
+    );
+
+    res.json(medicine);
+  } catch (e) {
+    res.status(400).json({ error: "Failed to update availability", details: e });
+  }
+};
+const getAllOrders = async (req: Request, res: Response) => {
+  try {
+    const orders = await AdminService.getAllOrders();
+    res.json(orders);
+  } catch (e) {
+    res.status(400).json({ error: "Failed to fetch orders", details: e });
+  }
+};
+
 
 export const AdminController = {
   addCategory,
   getCategories,
   getUsers,
     updateUserStatus,
-  updateMedicineStatus
+  updateMedicineStatus,
+  updateMedicineAvailability,
+  getAllOrders
+
 };
