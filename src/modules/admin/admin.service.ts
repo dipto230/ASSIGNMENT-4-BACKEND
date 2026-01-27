@@ -38,6 +38,18 @@ const updateMedicineStatus = async (medicineId: string, status: "AVAILABLE" | "U
   });
 };
 
+
+const updateMedicineAvailability = async (
+  medicineId: string,
+  status: "AVAILABLE" | "UNAVAILABLE"
+) => {
+  return prisma.medicine.update({
+    where: { id: medicineId },
+    data: { isActive: status === "AVAILABLE" },
+  });
+};
+
+
 const approveMedicine = async (medicineId: string, adminId: string) => {
   return prisma.medicine.update({
     where: { id: medicineId },

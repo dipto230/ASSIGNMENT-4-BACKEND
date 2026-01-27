@@ -84,6 +84,14 @@ const addReview = async (req: AuthRequest, res: Response) => {
     res.status(400).json({ error: "Failed to add review", details: e });
   }
 };
+const updateProfile = async (req: AuthRequest, res: Response) => {
+  try {
+    const user = await CustomerService.updateProfile(req.user!.id, req.body);
+    res.json(user);
+  } catch (e) {
+    res.status(400).json({ error: "Failed to update profile", details: e });
+  }
+};
 
 export const CustomerController = {
   getCart,
@@ -94,4 +102,5 @@ export const CustomerController = {
   getOrders,
   getOrderById,
   addReview,
+  updateProfile
 };
