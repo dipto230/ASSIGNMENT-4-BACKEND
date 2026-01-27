@@ -40,6 +40,16 @@ export const CustomerService = {
   ) => {
     const cartItems = await prisma.cartItem.findMany({ where: { userId }, include: { medicine: true } });
     if (cartItems.length === 0) throw new Error("Cart is empty");
+    
+for (const item of cartItems) {
+  if (!item.medicine.isActive || !item.medicine.isApproved) {
+    throw new Error(`${item.medicine.name} is not available for purchase`);
+  }
+  if (item.quantity > item.medicine.stock) {
+    throw new Error(`Not enough stock for ${item.medicine.name}`);
+  }
+}
+
 
     const total = cartItems.reduce((acc, item) => acc + Number(item.medicine.price) * item.quantity, 0);
 
@@ -64,6 +74,14 @@ export const CustomerService = {
 
 
     await prisma.cartItem.deleteMany({ where: { userId } });
+    
+for (const item of cartItems) {
+  await prisma.medicine.update({
+    where: { id: item.medicineId },
+    data: { stock: { decrement: item.quantity } },
+  });
+}
+
 
     return order;
   },
@@ -95,4 +113,22 @@ export const CustomerService = {
       data: { userId, medicineId, rating, comment },
     });
   },
+  updateProfile: async (
+  userId: string,
+  data: { name?: string; phone?: string; image?: string }
+) => {
+  return prisma.user.update({
+    where: { id: userId },
+    data,
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      image: true,
+      role: true,
+    },
+  });
+},
+
 };
