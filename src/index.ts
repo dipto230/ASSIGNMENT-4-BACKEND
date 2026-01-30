@@ -1,13 +1,22 @@
+import serverless from "serverless-http";
 import app from "./app";
 import { prisma } from "./lib/prisma";
 
+let prismaConnected = false;
 
-export default async function handler(req: any, res: any) {
+const handler = serverless(app);
+
+export default async function (req: any, res: any) {
   try {
-    await prisma.$connect();
-    return app(req, res);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Internal Server Error" });
+    if (!prismaConnected) {
+      await prisma.$connect();
+      prismaConnected = true;
+      console.log("DB Connected");
+    }
+
+    return handler(req, res);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 }
