@@ -33,58 +33,58 @@ export const CustomerService = {
   },
 
 
-  placeOrder: async (
-    userId: string,
-    shipping: { name: string; phone: string; address: string; city: string; postalCode: string; country: string },
-    paymentMethod: "COD" = "COD"
-  ) => {
-    const cartItems = await prisma.cartItem.findMany({ where: { userId }, include: { medicine: true } });
-    if (cartItems.length === 0) throw new Error("Cart is empty");
-    
-for (const item of cartItems) {
-  if (!item.medicine.isActive || !item.medicine.isApproved) {
-    throw new Error(`${item.medicine.name} is not available for purchase`);
-  }
-  if (item.quantity > item.medicine.stock) {
-    throw new Error(`Not enough stock for ${item.medicine.name}`);
-  }
-}
-
-
-    const total = cartItems.reduce((acc, item) => acc + Number(item.medicine.price) * item.quantity, 0);
-
-    const order = await prisma.order.create({
-      data: {
-        userId,
-        total,
-        paymentMethod,
-        paymentStatus: "PENDING",
-        items: {
-          create: cartItems.map((item) => ({
-            medicineId: item.medicineId,
-            sellerId: item.medicine.sellerId,
-            quantity: item.quantity,
-            price: item.medicine.price,
-          })),
-        },
-        shipping: { create: shipping },
-      },
-      include: { items: true, shipping: true },
-    });
-
-
-    await prisma.cartItem.deleteMany({ where: { userId } });
-    
-for (const item of cartItems) {
-  await prisma.medicine.update({
-    where: { id: item.medicineId },
-    data: { stock: { decrement: item.quantity } },
+ placeOrder: async (
+  userId: string,
+  shipping: { name: string; phone: string; address: string; city: string; postalCode: string; country: string },
+  paymentMethod: "COD" = "COD"
+) => {
+  const cartItems = await prisma.cartItem.findMany({
+    where: { userId },
+    include: { medicine: true },
   });
-}
 
+  if (cartItems.length === 0) throw new Error("Cart is empty");
 
-    return order;
-  },
+  for (const item of cartItems) {
+    if (!item.medicine.isActive || !item.medicine.isApproved) {
+      throw new Error(`${item.medicine.name} is not available`);
+    }
+    if (item.quantity > item.medicine.stock) {
+      throw new Error(`Not enough stock for ${item.medicine.name}`);
+    }
+  }
+
+  const total = cartItems.reduce(
+    (acc, item) => acc + Number(item.medicine.price) * item.quantity,
+    0
+  );
+
+  const order = await prisma.order.create({
+    data: {
+      userId,
+      total,
+      paymentMethod,
+      paymentStatus: "PENDING",
+      status: "PLACED",
+      items: {
+        create: cartItems.map((item) => ({
+          medicineId: item.medicineId,
+          sellerId: item.medicine.sellerId,
+          quantity: item.quantity,
+          price: item.medicine.price,
+          status: "PLACED", 
+        })),
+      },
+      shipping: { create: shipping },
+    },
+    include: { items: true, shipping: true },
+  });
+
+  await prisma.cartItem.deleteMany({ where: { userId } });
+
+  return order;
+},
+
 
   getOrders: async (userId: string) => {
     return prisma.order.findMany({

@@ -20,7 +20,7 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-// ✅ Session route must come before BetterAuth handler
+
 app.get("/api/auth/session", async (req, res) => {
   try {
     const session = await auth.api.getSession({ headers: req.headers });

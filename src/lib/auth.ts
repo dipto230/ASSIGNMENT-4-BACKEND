@@ -31,7 +31,7 @@ export const auth = betterAuth({
     expiresIn: 60 * 60 * 24 * 7,
   },
 
-  // 🔴 REQUIRED for cookies to work cross-origin
+  
   cookies: {
     sessionToken: {
       attributes: {

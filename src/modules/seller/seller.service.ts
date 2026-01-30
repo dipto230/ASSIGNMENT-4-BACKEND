@@ -59,16 +59,59 @@ const getSellerOrderItems = async (sellerId: string) => {
   });
 };
 
+const updateMainOrderStatus = async (orderId: string) => {
+  const items = await prisma.orderItem.findMany({ where: { orderId } });
+
+  const statuses = items.map((i) => i.status);
+
+  let newStatus: OrderStatus = "PLACED";
+
+  if (statuses.every((s) => s === "CANCELLED")) newStatus = "CANCELLED";
+  else if (statuses.every((s) => s === "DELIVERED")) newStatus = "DELIVERED";
+  else if (statuses.every((s) => s === "SHIPPED")) newStatus = "SHIPPED";
+  else if (statuses.some((s) => s === "PROCESSING")) newStatus = "PROCESSING";
+
+  await prisma.order.update({
+    where: { id: orderId },
+    data: { status: newStatus },
+  });
+};
+
+
 const updateOrderItemStatus = async (
   itemId: string,
   sellerId: string,
   status: OrderStatus
 ) => {
-  return prisma.orderItem.updateMany({
+  const item = await prisma.orderItem.findFirst({
     where: { id: itemId, sellerId },
+    include: { medicine: true },
+  });
+
+  if (!item) throw new Error("Order item not found");
+
+  
+  if (status === "PROCESSING" && item.status === "PLACED") {
+    if (item.quantity > item.medicine.stock) {
+      throw new Error("Stock not available anymore");
+    }
+
+    await prisma.medicine.update({
+      where: { id: item.medicineId },
+      data: { stock: { decrement: item.quantity } },
+    });
+  }
+
+  const updatedItem = await prisma.orderItem.update({
+    where: { id: itemId },
     data: { status },
   });
+
+  await updateMainOrderStatus(item.orderId);
+
+  return updatedItem;
 };
+
 
 export const SellerService = {
   createMedicine,
