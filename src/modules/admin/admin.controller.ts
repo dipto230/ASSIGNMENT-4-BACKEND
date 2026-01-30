@@ -95,6 +95,18 @@ const getAllOrders = async (req: Request, res: Response) => {
 };
 
 
+
+const getAllMedicines = async (_req: Request, res: Response) => {
+  try {
+    const medicines = await AdminService.getAllMedicines();
+    res.json(medicines);
+  } catch (e) {
+    res.status(400).json({ error: "Failed to fetch medicines", details: e });
+  }
+};
+
+
+
 export const AdminController = {
   addCategory,
   getCategories,
@@ -102,6 +114,7 @@ export const AdminController = {
     updateUserStatus,
   updateMedicineStatus,
   updateMedicineAvailability,
-  getAllOrders
+  getAllOrders,
+  getAllMedicines
 
 };

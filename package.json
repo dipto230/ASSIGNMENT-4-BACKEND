@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "npx tsx watch src/server.ts"
+    "dev": "npx tsx watch src/server.ts",
+    "seed": "tsx prisma/seed.ts",
+    "build": "prisma generate && tsup src/server.ts --format esm --platform node --target node20 --outDir api --external pg-native",
+    "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": "",
@@ -13,11 +16,15 @@
   "type": "commonjs",
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.0.10",
     "@types/pg": "^8.16.0",
     "prisma": "^7.3.0",
+     "tsup": "^8.5.1",
+    "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },

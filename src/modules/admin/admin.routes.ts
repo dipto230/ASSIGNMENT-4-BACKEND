@@ -22,4 +22,9 @@ router.patch("/medicines/:id/availability", AdminController.updateMedicineAvaila
 router.get("/orders", AdminController.getAllOrders);
 
 
+
+router.get("/medicines", AdminController.getAllMedicines);
+
+
+
 export const AdminRouter = router;

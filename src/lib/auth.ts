@@ -3,6 +3,12 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
 
 export const auth = betterAuth({
+  // 🔴 REQUIRED for cross-origin
+  baseURL: "http://localhost:5000",
+
+  // 🔴 REQUIRED to trust frontend
+  trustedOrigins: ["http://localhost:3000"],
+
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
@@ -22,6 +28,16 @@ export const auth = betterAuth({
   },
 
   session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
+    expiresIn: 60 * 60 * 24 * 7,
+  },
+
+  // 🔴 REQUIRED for cookies to work cross-origin
+  cookies: {
+    sessionToken: {
+      attributes: {
+        sameSite: "none",
+        secure: false,    
+      },
+    },
   },
 });
