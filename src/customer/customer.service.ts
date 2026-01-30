@@ -110,7 +110,8 @@ export const CustomerService = {
 
   
     return prisma.review.create({
-      data: { userId, medicineId, rating, comment },
+      data: { userId, medicineId, rating, comment: comment ?? null },
+
     });
   },
   updateProfile: async (

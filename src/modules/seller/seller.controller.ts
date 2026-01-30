@@ -13,7 +13,7 @@ const addMedicine = async (req: AuthRequest, res: Response) => {
 
 const updateMedicine = async (req: AuthRequest, res: Response) => {
   const result = await SellerService.updateMedicine(
-    req.params.id,
+    String(req.params.id),
     req.user!.id,
     req.body
   );
@@ -21,7 +21,7 @@ const updateMedicine = async (req: AuthRequest, res: Response) => {
 };
 
 const deleteMedicine = async (req: AuthRequest, res: Response) => {
-  await SellerService.deleteMedicine(req.params.id, req.user!.id);
+  await SellerService.deleteMedicine(String(req.params.id), req.user!.id);
   res.json({ message: "Medicine deleted" });
 };
 
@@ -39,7 +39,7 @@ const getOrders = async (req: AuthRequest, res: Response) => {
 
 const updateOrderStatus = async (req: AuthRequest, res: Response) => {
   const item = await SellerService.updateOrderItemStatus(
-    req.params.itemId,
+    String(req.params.itemId),
     req.user!.id,
     req.body.status
   );

@@ -1,11 +1,12 @@
 import { prisma } from "../../lib/prisma";
 
 interface GetMedicinesFilters {
-  categoryId?: string;
-  manufacturer?: string;
-  minPrice?: number;
-  maxPrice?: number;
+  categoryId?: string | undefined;
+  manufacturer?: string | undefined;
+  minPrice?: number | undefined;
+  maxPrice?: number | undefined;
 }
+
 
 const getMedicines = async (filters: GetMedicinesFilters) => {
   const where: any = {

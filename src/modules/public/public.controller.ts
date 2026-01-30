@@ -20,7 +20,7 @@ const getMedicines = async (req: Request, res: Response) => {
 
 const getMedicineById = async (req: Request, res: Response) => {
   try {
-    const medicine = await PublicService.getMedicineById(req.params.id);
+    const medicine = await PublicService.getMedicineById(String(req.params.id));
     if (!medicine) return res.status(404).json({ error: "Medicine not found" });
     res.json(medicine);
   } catch (e) {

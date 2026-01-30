@@ -28,7 +28,7 @@ const addToCart = async (req: AuthRequest, res: Response) => {
 const updateCartItem = async (req: AuthRequest, res: Response) => {
   try {
     const { quantity } = req.body;
-    const cartItem = await CustomerService.updateCartItem(req.params.cartItemId, req.user!.id, quantity);
+    const cartItem = await CustomerService.updateCartItem(String(req.params.cartItemId), req.user!.id, quantity);
     res.json(cartItem);
   } catch (e) {
     res.status(400).json({ error: "Failed to update cart item", details: e });
@@ -37,7 +37,7 @@ const updateCartItem = async (req: AuthRequest, res: Response) => {
 
 const removeCartItem = async (req: AuthRequest, res: Response) => {
   try {
-    await CustomerService.removeCartItem(req.params.cartItemId, req.user!.id);
+    await CustomerService.removeCartItem(String(req.params.cartItemId), req.user!.id);
     res.json({ message: "Item removed from cart" });
   } catch (e) {
     res.status(400).json({ error: "Failed to remove cart item", details: e });
@@ -66,7 +66,7 @@ const getOrders = async (req: AuthRequest, res: Response) => {
 
 const getOrderById = async (req: AuthRequest, res: Response) => {
   try {
-    const order = await CustomerService.getOrderById(req.params.id, req.user!.id);
+    const order = await CustomerService.getOrderById(String(req.params.id), req.user!.id);
     if (!order) return res.status(404).json({ error: "Order not found" });
     res.json(order);
   } catch (e) {

@@ -23,7 +23,16 @@ app.use(cookieParser());
 
 app.get("/api/auth/session", async (req, res) => {
   try {
-    const session = await auth.api.getSession({ headers: req.headers });
+    const headers = new Headers();
+
+Object.entries(req.headers).forEach(([key, value]) => {
+  if (typeof value === "string") {
+    headers.set(key, value);
+  }
+});
+
+const session = await auth.api.getSession({ headers });
+
     if (!session?.user) {
       return res.status(401).json({ message: "Not logged in" });
     }

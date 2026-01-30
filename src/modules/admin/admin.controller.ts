@@ -36,37 +36,14 @@ const updateUserStatus = async (req: Request, res: Response) => {
     if (!["ACTIVE", "BANNED"].includes(status)) {
       return res.status(400).json({ error: "Invalid status" });
     }
-    const user = await AdminService.updateUserStatus(req.params.id, status);
+    const user = await AdminService.updateUserStatus(String(req.params.id), status);
     res.json(user);
   } catch (e) {
     res.status(400).json({ error: "Failed to update user status", details: e });
   }
 };
 
-const updateMedicineStatus = async (req: any, res: Response) => {
-  try {
-    const { status } = req.body;
 
-    
-    if (status === "APPROVE") {
-      const medicine = await AdminService.approveMedicine(req.params.id, req.user.id);
-      return res.json(medicine);
-    }
-
-    
-    if (!["AVAILABLE", "UNAVAILABLE"].includes(status)) {
-      return res.status(400).json({ error: "Invalid status" });
-    }
-
-    const medicine = await AdminService.updateMedicineStatus(
-      req.params.id,
-      status as "AVAILABLE" | "UNAVAILABLE"
-    );
-    res.json(medicine);
-  } catch (e) {
-    res.status(400).json({ error: "Failed to update medicine status", details: e });
-  }
-};
 const updateMedicineAvailability = async (req: Request, res: Response) => {
   try {
     const { status } = req.body;
@@ -76,7 +53,7 @@ const updateMedicineAvailability = async (req: Request, res: Response) => {
     }
 
     const medicine = await AdminService.updateMedicineAvailability(
-      req.params.id,
+      String(req.params.id),
       status as "AVAILABLE" | "UNAVAILABLE"
     );
 
@@ -112,7 +89,7 @@ export const AdminController = {
   getCategories,
   getUsers,
     updateUserStatus,
-  updateMedicineStatus,
+
   updateMedicineAvailability,
   getAllOrders,
   getAllMedicines

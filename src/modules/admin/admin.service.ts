@@ -10,7 +10,7 @@ const getAllCategories = async (): Promise<Category[]> => {
   return prisma.category.findMany();
 };
 
-const getAllUsers = async (): Promise<User[]> => {
+const getAllUsers = async () => {
   return prisma.user.findMany({
     select: {
       id: true,
@@ -19,9 +19,14 @@ const getAllUsers = async (): Promise<User[]> => {
       role: true,
       status: true,
       createdAt: true,
+      updatedAt: true,
+      image: true,
+      emailVerified: true,
+      phone: true,
     },
   });
 };
+
 
 const updateUserStatus = async (userId: string, status: "ACTIVE" | "BANNED"): Promise<User> => {
   return prisma.user.update({
@@ -31,12 +36,7 @@ const updateUserStatus = async (userId: string, status: "ACTIVE" | "BANNED"): Pr
 };
 
 
-const updateMedicineStatus = async (medicineId: string, status: "AVAILABLE" | "UNAVAILABLE"): Promise<Medicine> => {
-  return prisma.medicine.update({
-    where: { id: medicineId },
-    data: { status },
-  });
-};
+
 
 
 const updateMedicineAvailability = async (
@@ -113,7 +113,7 @@ export const AdminService = {
   getAllCategories,
   getAllUsers,
     updateUserStatus,
-  updateMedicineStatus,
+
   approveMedicine,
   updateMedicineAvailability,
   getAllOrders,
