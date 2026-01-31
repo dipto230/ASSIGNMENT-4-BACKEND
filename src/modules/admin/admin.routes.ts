@@ -25,6 +25,7 @@ router.get("/orders", AdminController.getAllOrders);
 
 router.get("/medicines", AdminController.getAllMedicines);
 
+router.patch("/medicines/:id/approve", AdminController.approveMedicine);
 
 
 export const AdminRouter = router;

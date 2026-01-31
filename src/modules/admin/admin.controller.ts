@@ -84,11 +84,27 @@ const getAllMedicines = async (_req: Request, res: Response) => {
 
 
 
+const approveMedicine = async (req: any, res: Response) => {
+  try {
+    const medicine = await AdminService.approveMedicine(
+      String(req.params.id),
+      req.user.id   // admin id
+    );
+    res.json(medicine);
+  } catch (e) {
+    res.status(400).json({ error: "Failed to approve medicine", details: e });
+  }
+};
+
+
+
+
 export const AdminController = {
   addCategory,
   getCategories,
   getUsers,
-    updateUserStatus,
+  updateUserStatus,
+    approveMedicine,
 
   updateMedicineAvailability,
   getAllOrders,
