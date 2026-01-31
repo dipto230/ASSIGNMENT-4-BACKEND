@@ -7,6 +7,7 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 
 // src/lib/prisma.ts
+import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 // generated/prisma/client.ts
@@ -66,13 +67,9 @@ globalThis["__dirname"] = path.dirname(fileURLToPath(import.meta.url));
 var PrismaClient = getPrismaClientClass();
 
 // src/lib/prisma.ts
-var globalForPrisma = globalThis;
-var connectionString = process.env.DATABASE_URL;
+var connectionString = `${process.env.DATABASE_URL}`;
 var adapter = new PrismaPg({ connectionString });
-var prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
-}
+var prisma = new PrismaClient({ adapter });
 
 // src/lib/auth.ts
 var auth = betterAuth({
@@ -804,10 +801,9 @@ app.use(
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error(`Origin ${origin} not allowed by CORS`));
+        return callback(null, true);
       }
+      return callback(new Error(`Origin ${origin} not allowed by CORS`));
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
@@ -815,39 +811,70 @@ app.use(
     exposedHeaders: ["Set-Cookie"]
   })
 );
-app.get("/", (req, res) => {
-  res.send("Hello Assignment 4 \u{1F680}");
+app.get("/", (_req, res) => {
+  res.status(200).send("Hello Assignment 4 \u{1F680}");
 });
-app.get("/favicon.png", (req, res) => res.status(204).end());
-app.get("/favicon.ico", (req, res) => res.status(204).end());
+app.get("/health", (_req, res) => {
+  res.status(200).send("OK");
+});
+app.get("/favicon.ico", (_req, res) => {
+  res.status(204).end();
+});
+app.get("/favicon.png", (_req, res) => {
+  res.status(204).end();
+});
+app.use("/api", PublicRouter);
 app.get("/api/auth/session", async (req, res) => {
   try {
     const headers = new Headers();
     Object.entries(req.headers).forEach(([key, value]) => {
-      if (typeof value === "string") headers.set(key, value);
+      if (typeof value === "string") {
+        headers.set(key, value);
+      }
     });
     const session = await auth.api.getSession({ headers });
     if (!session?.user) {
       return res.status(401).json({ message: "Not logged in" });
     }
-    res.json(session);
+    res.status(200).json(session);
   } catch (error) {
-    res.status(500).json({ message: "Failed to get session", error });
+    res.status(500).json({
+      message: "Failed to get session",
+      error
+    });
   }
 });
 app.all("/api/auth/*splat", toNodeHandler(auth));
-app.use("/api", PublicRouter);
 app.use("/api/seller", SellerRouter);
 app.use("/api/admin", AdminRouter);
 app.use("/api/customer", CustomerRouter);
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(err.status || 500).json({ message: err.message || "Server error" });
-});
+app.use(
+  (err, _req, res, _next) => {
+    console.error(err.stack);
+    res.status(err.status || 500).json({
+      message: err.message || "Server error"
+    });
+  }
+);
 var app_default = app;
 
-// src/index.ts
-var index_default = app_default;
+// src/server.ts
+var PORT = process.env.PORT || 5e3;
+async function main() {
+  try {
+    await prisma.$connect();
+    console.log("Connected to the database successfully..");
+    app_default.listen(PORT, () => {
+      console.log(`Server is running on http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.log("An error occurred", error);
+    await prisma.$disconnect();
+    process.exit(1);
+  }
+}
+main();
+var server_default = app_default;
 export {
-  index_default as default
+  server_default as default
 };

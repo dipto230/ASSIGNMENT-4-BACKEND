@@ -5,7 +5,6 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
 
-
 import { SellerRouter } from "./modules/seller/seller.routes";
 import { AdminRouter } from "./modules/admin/admin.routes";
 import { PublicRouter } from "./modules/public/public.routes";
@@ -14,13 +13,13 @@ import { CustomerRouter } from "./customer/customer.routes";
 const app: Application = express();
 
 
-
 app.use(helmet());
 app.use(express.json());
 app.use(cookieParser());
 
-
 const allowedOrigins = [
+  "http://localhost:5000", 
+  "https://medistore-assignment-70.vercel.app",
   process.env.APP_URL || "http://localhost:3000",
   process.env.PROD_APP_URL,
 ].filter(Boolean);
@@ -30,10 +29,9 @@ app.use(
     origin: (origin, callback) => {
       if (!origin) return callback(null, true); 
       if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error(`Origin ${origin} not allowed by CORS`));
+        return callback(null, true);
       }
+      return callback(new Error(`Origin ${origin} not allowed by CORS`));
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
@@ -43,21 +41,33 @@ app.use(
 );
 
 
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello Assignment 4 🚀");
+app.get("/", (_req: Request, res: Response) => {
+  res.status(200).send("Hello Assignment 4 🚀");
+});
+
+app.get("/health", (_req: Request, res: Response) => {
+  res.status(200).send("OK");
+});
+
+app.get("/favicon.ico", (_req: Request, res: Response) => {
+  res.status(204).end();
+});
+
+app.get("/favicon.png", (_req: Request, res: Response) => {
+  res.status(204).end();
 });
 
 
-app.get("/favicon.png", (req, res) => res.status(204).end());
-app.get("/favicon.ico", (req, res) => res.status(204).end());
-
+app.use("/api", PublicRouter);
 
 
 app.get("/api/auth/session", async (req: Request, res: Response) => {
   try {
     const headers = new Headers();
     Object.entries(req.headers).forEach(([key, value]) => {
-      if (typeof value === "string") headers.set(key, value);
+      if (typeof value === "string") {
+        headers.set(key, value);
+      }
     });
 
     const session = await auth.api.getSession({ headers });
@@ -66,9 +76,12 @@ app.get("/api/auth/session", async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Not logged in" });
     }
 
-    res.json(session);
+    res.status(200).json(session);
   } catch (error) {
-    res.status(500).json({ message: "Failed to get session", error });
+    res.status(500).json({
+      message: "Failed to get session",
+      error,
+    });
   }
 });
 
@@ -76,17 +89,18 @@ app.get("/api/auth/session", async (req: Request, res: Response) => {
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
 
-app.use("/api", PublicRouter);
-
-
 app.use("/api/seller", SellerRouter);
 app.use("/api/admin", AdminRouter);
 app.use("/api/customer", CustomerRouter);
 
 
-app.use((err: any, req: Request, res: Response, next: Function) => {
-  console.error(err.stack);
-  res.status(err.status || 500).json({ message: err.message || "Server error" });
-});
+app.use(
+  (err: any, _req: Request, res: Response, _next: Function) => {
+    console.error(err.stack);
+    res.status(err.status || 500).json({
+      message: err.message || "Server error",
+    });
+  }
+);
 
 export default app;

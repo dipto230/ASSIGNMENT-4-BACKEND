@@ -3,11 +3,15 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
 
 export const auth = betterAuth({
-  // 🔴 REQUIRED for cross-origin
-  baseURL: process.env.BETTER_AUTH_URL!,
+  // 🔥 MUST be your deployed backend URL
+  baseURL: "https://medistore-assignment-70.vercel.app",
 
-  // 🔴 REQUIRED to trust frontend
-  trustedOrigins: [process.env.FRONTEND_URL!],
+  // 🔥 TRUST your frontend origins
+  trustedOrigins: [
+    "http://localhost:3000",   // local frontend dev
+    "http://localhost:5000",   // if testing same origin
+    "https://medistore-assignment-70.vercel.app", // deployed frontend if used
+  ],
 
   database: prismaAdapter(prisma, {
     provider: "postgresql",
@@ -28,15 +32,14 @@ export const auth = betterAuth({
   },
 
   session: {
-    expiresIn: 60 * 60 * 24 * 7,
+    expiresIn: 60 * 60 * 24 * 7, // 7 days
   },
 
-  
   cookies: {
     sessionToken: {
       attributes: {
-        sameSite: "none",
-        secure: false,    
+        sameSite: "none", // required for cross-site cookies
+        secure: true,     // MUST be true for HTTPS (Vercel)
       },
     },
   },
