@@ -10,7 +10,7 @@ export const auth = betterAuth({
   trustedOrigins: [
     "http://localhost:3000",   // local frontend dev
     "http://localhost:5000",   // if testing same origin
-    "https://medistore-assignment-70.vercel.app", // deployed frontend if used
+    "https://medistore-client-side.vercel.app", // deployed frontend if used
   ],
 
   database: prismaAdapter(prisma, {

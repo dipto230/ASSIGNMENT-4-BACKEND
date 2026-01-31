@@ -18,10 +18,10 @@ app.use(express.json());
 app.use(cookieParser());
 
 const allowedOrigins = [
-  "http://localhost:5000", 
-  "https://medistore-assignment-70.vercel.app",
-  process.env.APP_URL || "http://localhost:3000",
-  process.env.PROD_APP_URL,
+ "http://localhost:3000",
+  "http://localhost:5000",
+  "https://medistore-client-side.vercel.app",
+  "https://medistore-assignment-70.vercel.app", 
 ].filter(Boolean);
 
 app.use(
