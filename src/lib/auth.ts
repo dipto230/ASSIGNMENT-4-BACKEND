@@ -4,10 +4,10 @@ import { prisma } from "./prisma";
 
 export const auth = betterAuth({
   // 🔴 REQUIRED for cross-origin
-  baseURL: "http://localhost:5000",
+  baseURL: process.env.BETTER_AUTH_URL!,
 
   // 🔴 REQUIRED to trust frontend
-  trustedOrigins: ["http://localhost:3000"],
+  trustedOrigins: [process.env.FRONTEND_URL!],
 
   database: prismaAdapter(prisma, {
     provider: "postgresql",
