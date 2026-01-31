@@ -7,7 +7,6 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 
 // src/lib/prisma.ts
-import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 // generated/prisma/client.ts
@@ -67,9 +66,13 @@ globalThis["__dirname"] = path.dirname(fileURLToPath(import.meta.url));
 var PrismaClient = getPrismaClientClass();
 
 // src/lib/prisma.ts
-var connectionString = `${process.env.DATABASE_URL}`;
+var globalForPrisma = globalThis;
+var connectionString = process.env.DATABASE_URL;
 var adapter = new PrismaPg({ connectionString });
-var prisma = new PrismaClient({ adapter });
+var prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma;
+}
 
 // src/lib/auth.ts
 var auth = betterAuth({
@@ -794,9 +797,7 @@ app.use(express5.json());
 app.use(cookieParser());
 var allowedOrigins = [
   process.env.APP_URL || "http://localhost:3000",
-  // Dev frontend
   process.env.PROD_APP_URL
-  // Production frontend
 ].filter(Boolean);
 app.use(
   cors({
@@ -814,6 +815,11 @@ app.use(
     exposedHeaders: ["Set-Cookie"]
   })
 );
+app.get("/", (req, res) => {
+  res.send("Hello Assignment 4 \u{1F680}");
+});
+app.get("/favicon.png", (req, res) => res.status(204).end());
+app.get("/favicon.ico", (req, res) => res.status(204).end());
 app.get("/api/auth/session", async (req, res) => {
   try {
     const headers = new Headers();
@@ -830,12 +836,13 @@ app.get("/api/auth/session", async (req, res) => {
   }
 });
 app.all("/api/auth/*splat", toNodeHandler(auth));
+app.use("/api", PublicRouter);
 app.use("/api/seller", SellerRouter);
 app.use("/api/admin", AdminRouter);
 app.use("/api/customer", CustomerRouter);
-app.use("/api", PublicRouter);
-app.get("/", (req, res) => {
-  res.send("Hello Assignment 4");
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(err.status || 500).json({ message: err.message || "Server error" });
 });
 var app_default = app;
 

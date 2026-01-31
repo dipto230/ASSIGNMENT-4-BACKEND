@@ -1,40 +1,34 @@
-import express, { Application, Request, Response, NextFunction } from "express";
+import express, { Application, Request, Response } from "express";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
 
-// Routers
+
 import { SellerRouter } from "./modules/seller/seller.routes";
 import { AdminRouter } from "./modules/admin/admin.routes";
 import { PublicRouter } from "./modules/public/public.routes";
 import { CustomerRouter } from "./customer/customer.routes";
 
-
-
 const app: Application = express();
 
-// -----------------------------
-// Security & Parsing Middlewares
-// -----------------------------
-app.use(helmet()); 
+
+
+app.use(helmet());
 app.use(express.json());
 app.use(cookieParser());
 
-// -----------------------------
-// CORS
-// -----------------------------
+
 const allowedOrigins = [
-  process.env.APP_URL || "http://localhost:3000", // Dev frontend
-  process.env.PROD_APP_URL, // Production frontend
+  process.env.APP_URL || "http://localhost:3000",
+  process.env.PROD_APP_URL,
 ].filter(Boolean);
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true); // allow Postman, mobile, etc.
-
+      if (!origin) return callback(null, true); 
       if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
@@ -48,9 +42,17 @@ app.use(
   })
 );
 
-// -----------------------------
-// BetterAuth Session Route
-// -----------------------------
+
+app.get("/", (req: Request, res: Response) => {
+  res.send("Hello Assignment 4 🚀");
+});
+
+
+app.get("/favicon.png", (req, res) => res.status(204).end());
+app.get("/favicon.ico", (req, res) => res.status(204).end());
+
+
+
 app.get("/api/auth/session", async (req: Request, res: Response) => {
   try {
     const headers = new Headers();
@@ -70,29 +72,21 @@ app.get("/api/auth/session", async (req: Request, res: Response) => {
   }
 });
 
-// -----------------------------
-// BetterAuth all other routes
-// -----------------------------
+
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
-// -----------------------------
-// Application Routers
-// -----------------------------
+
+app.use("/api", PublicRouter);
+
+
 app.use("/api/seller", SellerRouter);
 app.use("/api/admin", AdminRouter);
 app.use("/api/customer", CustomerRouter);
-app.use("/api", PublicRouter);
 
-// -----------------------------
-// Root Route
-// -----------------------------
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello Assignment 4");
+
+app.use((err: any, req: Request, res: Response, next: Function) => {
+  console.error(err.stack);
+  res.status(err.status || 500).json({ message: err.message || "Server error" });
 });
-
-// -----------------------------
-// Error Handling
-// -----------------------------
-
 
 export default app;
