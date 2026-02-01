@@ -26,15 +26,20 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      // allow server-to-server & Postman
-      if (!origin) return callback(null, true);
+      // allow server-to-server, Postman, health checks
+      if (!origin) {
+        return callback(null, true);
+      }
 
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
-      console.error("❌ Blocked by CORS:", origin);
-      return callback(new Error("Not allowed by CORS"));
+      console.error("Blocked by CORS:", origin);
+
+      // ❗ DO NOT THROW ERROR
+      // This keeps the logic (blocked) but allows headers to be sent
+      return callback(null, false);
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -46,7 +51,7 @@ app.use(
   })
 );
 
-// ✅ IMPORTANT: handle preflight
+// preflight handling
 app.options("*", cors());
 
 app.get("/", (_req, res) => {
@@ -57,18 +62,14 @@ app.get("/health", (_req, res) => {
   res.status(200).send("OK");
 });
 
-// ---- PUBLIC ROUTES
 app.use("/api", PublicRouter);
 
-// ---- AUTH (let BetterAuth handle everything)
 app.all("/api/auth/*", toNodeHandler(auth));
 
-// ---- PROTECTED ROUTES
 app.use("/api/seller", SellerRouter);
 app.use("/api/admin", AdminRouter);
 app.use("/api/customer", CustomerRouter);
 
-// ---- ERROR HANDLER
 app.use((err: any, _req: Request, res: Response, _next: Function) => {
   console.error(err.message);
   res.status(500).json({

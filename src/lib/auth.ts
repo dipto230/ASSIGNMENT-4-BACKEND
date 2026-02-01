@@ -39,8 +39,9 @@ export const auth = betterAuth({
   cookies: {
     sessionToken: {
       attributes: {
-        sameSite: "none", // required for cross-site cookies
-        secure: true,     // MUST be true for HTTPS (Vercel)
+        sameSite: "none",
+        secure: true,     
+         domain: "medistore-assignment-70.vercel.app",
       },
     },
   },
