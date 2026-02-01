@@ -4,13 +4,13 @@ import { prisma } from "./prisma";
 
 export const auth = betterAuth({
   
-  baseURL: "https://medistore-assignment-70.vercel.app/",
+  baseURL: "https://medistore-assignment-70.vercel.app",
 
 
   trustedOrigins: [
     "http://localhost:3000",   
-    "http://localhost:5000",   
-    "https://medistore-client-side.vercel.app/"
+      
+    "https://medistore-client-side.vercel.app"
   ],
 
   database: prismaAdapter(prisma, {

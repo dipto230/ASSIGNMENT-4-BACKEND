@@ -12,8 +12,6 @@ import { CustomerRouter } from "./customer/customer.routes";
 
 const app: Application = express();
 
-
-
 app.set("trust proxy", 1);
 
 app.use(helmet());
@@ -25,89 +23,57 @@ const allowedOrigins = [
   "https://medistore-client-side.vercel.app",
 ];
 
-
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true); 
+      // allow server-to-server & Postman
+      if (!origin) return callback(null, true);
+
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
-      console.warn("Blocked by CORS:", origin);
-      return callback(null, false); 
+
+      console.error("❌ Blocked by CORS:", origin);
+      return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+    ],
   })
 );
 
+// ✅ IMPORTANT: handle preflight
+app.options("*", cors());
 
-app.get("/", (_req: Request, res: Response) => {
+app.get("/", (_req, res) => {
   res.status(200).send("Hello Assignment 4 🚀");
 });
 
-app.get("/health", (_req: Request, res: Response) => {
+app.get("/health", (_req, res) => {
   res.status(200).send("OK");
 });
 
-app.get("/favicon.ico", (_req: Request, res: Response) => {
-  res.status(204).end();
-});
-
-app.get("/favicon.png", (_req: Request, res: Response) => {
-  res.status(204).end();
-});
-
-
-
+// ---- PUBLIC ROUTES
 app.use("/api", PublicRouter);
 
+// ---- AUTH (let BetterAuth handle everything)
+app.all("/api/auth/*", toNodeHandler(auth));
 
-
-app.get("/api/auth/session", async (req: Request, res: Response) => {
-  try {
-    const headers = new Headers();
-    Object.entries(req.headers).forEach(([key, value]) => {
-      if (typeof value === "string") {
-        headers.set(key, value);
-      }
-    });
-
-    const session = await auth.api.getSession({ headers });
-
-    if (!session?.user) {
-      return res.status(401).json({ message: "Not logged in" });
-    }
-
-    res.status(200).json(session);
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to get session",
-      error,
-    });
-  }
-});
-
-
-
-app.all("/api/auth/*splat", toNodeHandler(auth));
-
-
-
+// ---- PROTECTED ROUTES
 app.use("/api/seller", SellerRouter);
 app.use("/api/admin", AdminRouter);
 app.use("/api/customer", CustomerRouter);
 
-
-
-app.use(
-  (err: any, _req: Request, res: Response, _next: Function) => {
-    console.error(err.stack);
-    res.status(err.status || 500).json({
-      message: err.message || "Server error",
-    });
-  }
-);
+// ---- ERROR HANDLER
+app.use((err: any, _req: Request, res: Response, _next: Function) => {
+  console.error(err.message);
+  res.status(500).json({
+    message: err.message || "Server error",
+  });
+});
 
 export default app;
