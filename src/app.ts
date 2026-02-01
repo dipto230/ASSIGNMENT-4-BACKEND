@@ -18,42 +18,18 @@ app.use(helmet());
 app.use(express.json());
 app.use(cookieParser());
 
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://medistore-client-side.vercel.app",
-];
-
+// ✅ SIMPLE + SAFE CORS
 app.use(
   cors({
-    origin: (origin, callback) => {
-      // allow server-to-server, Postman, health checks
-      if (!origin) {
-        return callback(null, true);
-      }
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      console.error("Blocked by CORS:", origin);
-
-      // ❗ DO NOT THROW ERROR
-      // This keeps the logic (blocked) but allows headers to be sent
-      return callback(null, false);
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "X-Requested-With",
+    origin: [
+      "http://localhost:3000",
+      "https://medistore-client-side.vercel.app",
     ],
+    credentials: true,
   })
 );
 
-// preflight handling
-app.options("*", cors());
-
+// health
 app.get("/", (_req, res) => {
   res.status(200).send("Hello Assignment 4 🚀");
 });
@@ -62,16 +38,18 @@ app.get("/health", (_req, res) => {
   res.status(200).send("OK");
 });
 
-app.use("/api", PublicRouter);
-
+// 🔥 AUTH MUST BE FIRST
 app.all("/api/auth/*", toNodeHandler(auth));
 
+// routes
+app.use("/api", PublicRouter);
+app.use("/api/customer", CustomerRouter);
 app.use("/api/seller", SellerRouter);
 app.use("/api/admin", AdminRouter);
-app.use("/api/customer", CustomerRouter);
 
+// error handler
 app.use((err: any, _req: Request, res: Response, _next: Function) => {
-  console.error(err.message);
+  console.error(err);
   res.status(500).json({
     message: err.message || "Server error",
   });
