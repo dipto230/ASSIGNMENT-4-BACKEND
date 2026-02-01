@@ -13,32 +13,37 @@ import { CustomerRouter } from "./customer/customer.routes";
 const app: Application = express();
 
 
+// ✅ REQUIRED FOR VERCEL (secure cookies)
+app.set("trust proxy", 1);
+
 app.use(helmet());
 app.use(express.json());
 app.use(cookieParser());
 
 const allowedOrigins = [
-"http://localhost:3000",
-      "https://medistore-client-side.vercel.app",
-].filter(Boolean);
+  "http://localhost:3000",
+  "https://medistore-client-side.vercel.app",
+];
 
+// ✅ SAFER CORS (no thrown error)
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true); 
+      if (!origin) return callback(null, true); // allow server/server or Postman
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
-      return callback(new Error(`Origin ${origin} not allowed by CORS`));
+      console.warn("Blocked by CORS:", origin);
+      return callback(null, false); // ❗ do NOT throw error
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
-    exposedHeaders: ["Set-Cookie"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
 
+// ---------- Basic Routes ----------
 app.get("/", (_req: Request, res: Response) => {
   res.status(200).send("Hello Assignment 4 🚀");
 });
@@ -56,9 +61,11 @@ app.get("/favicon.png", (_req: Request, res: Response) => {
 });
 
 
+// ---------- Public Routes ----------
 app.use("/api", PublicRouter);
 
 
+// ---------- Your Custom Session Route (kept) ----------
 app.get("/api/auth/session", async (req: Request, res: Response) => {
   try {
     const headers = new Headers();
@@ -84,14 +91,17 @@ app.get("/api/auth/session", async (req: Request, res: Response) => {
 });
 
 
+// ---------- Better Auth Handler ----------
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
 
+// ---------- Feature Routes ----------
 app.use("/api/seller", SellerRouter);
 app.use("/api/admin", AdminRouter);
 app.use("/api/customer", CustomerRouter);
 
 
+// ---------- Global Error Handler ----------
 app.use(
   (err: any, _req: Request, res: Response, _next: Function) => {
     console.error(err.stack);

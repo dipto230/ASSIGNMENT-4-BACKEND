@@ -3,14 +3,14 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
 
 export const auth = betterAuth({
-  // 🔥 MUST be your deployed backend URL
+  
   baseURL: "https://medistore-assignment-70.vercel.app",
 
   // 🔥 TRUST your frontend origins
   trustedOrigins: [
-    "http://localhost:3000",   // local frontend dev
-    "http://localhost:5000",   // if testing same origin
-    "https://medistore-client-side.vercel.app", // deployed frontend if used
+    "http://localhost:3000",   
+    "http://localhost:5000",   
+    "https://medistore-client-side.vercel.app"
   ],
 
   database: prismaAdapter(prisma, {
