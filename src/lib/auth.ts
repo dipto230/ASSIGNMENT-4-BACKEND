@@ -38,16 +38,16 @@ export const auth = betterAuth({
   },
 
   // 🔥 THIS IS THE CRITICAL FIX
-  cookies: {
-    session: {
-      name: "__Secure-better-auth.session",
-      options: {
-        httpOnly: true,
-        secure: true,
-        sameSite: "none",
-        domain: ".vercel.app",
-       
-      },
+cookies: {
+  sessionToken: {
+    name: "__Secure-better-auth.session",
+    options: {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+       path: "/",
     },
   },
+},
+
 });
