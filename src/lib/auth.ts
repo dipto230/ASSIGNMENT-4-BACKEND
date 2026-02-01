@@ -12,6 +12,7 @@ export const auth = betterAuth({
       
     "https://medistore-client-side.vercel.app"
   ],
+   allowMissingOrigin: true,
 
   database: prismaAdapter(prisma, {
     provider: "postgresql",
