@@ -22,8 +22,9 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: [
+       "https://medistore-client-side.vercel.app",
       "http://localhost:3000",
-      "https://medistore-client-side.vercel.app",
+     
     ],
     credentials: true,
   })
