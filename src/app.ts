@@ -41,7 +41,7 @@ app.get("/health", (_req, res) => {
 });
 
 
-app.all("/api/auth/*", toNodeHandler(auth));
+app.all("/api/auth/*splat", toNodeHandler(auth));
 
 
 app.use("/api", PublicRouter);

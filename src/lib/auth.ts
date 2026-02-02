@@ -8,19 +8,11 @@ export const auth = betterAuth({
 
   database: prismaAdapter(prisma, { provider: "postgresql" }),
 
-  trustedOrigins: async (request) => {
-    const origin = request?.headers.get("origin");
-    const allowedOrigins = [
-      process.env.FRONTEND_URL, 
-      process.env.BETTER_AUTH_URL, 
-      "http://localhost:3000", 
-    ].filter(Boolean);
+trustedOrigins: [
+  process.env.FRONTEND_URL!,
+  "http://localhost:3000",
+],
 
-    if (!origin || allowedOrigins.includes(origin) || /^https:\/\/.*\.vercel\.app$/.test(origin)) {
-      return [origin];
-    }
-    return [];
-  },
 
   // basePath: "/api/auth",
 
@@ -50,23 +42,13 @@ export const auth = betterAuth({
   //   crossSubDomainCookies: { enabled: true },
   //   disableCSRFCheck: true,
   // },
-  advanced: {
-    defaultCookieAttributes: {
-      sameSite: "none",
-      secure: true,
+advanced: {
+  defaultCookieAttributes: {
+    sameSite: "none",
+    secure: true,
+    httpOnly: true,
+    path: "/",
+  },
+},
 
-      httpOnly: true,
-      path:"/"
-      
-    },
-    cookies: {
-      state: {
-        attributes: {
-          sameSite: "none",
-          secure: true,
-          path:"/"
-        }
-      }
-    }
-  }
 });
