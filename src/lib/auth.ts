@@ -3,7 +3,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
 
 export const auth = betterAuth({
-  baseURL: "https://medistore-assignment-70.vercel.app",
+  baseURL: "https://redeploy-medistore.vercel.app",
 
   database: prismaAdapter(prisma, {
     provider: "postgresql",
@@ -14,35 +14,43 @@ export const auth = betterAuth({
     "http://localhost:3000",
   ],
 
+  user: {
+    additionalFields: {
+      role: {
+        type: "string",
+        required: true,
+      },
+    },
+  },
+
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
     requireEmailVerification: false,
   },
 
-  /**
-   * ✅ Session config (as per guideline)
-   */
   session: {
     cookieCache: {
       enabled: true,
-      maxAge: 5 * 60, // 5 minutes
+      maxAge: 5 * 60,
+    },
+
+    fields: {
+      user: {
+        role: true,
+      },
     },
   },
 
-  /**
-   * ✅ Advanced config (as per guideline)
-   */
   advanced: {
     cookiePrefix: "better-auth",
-
     useSecureCookies: process.env.NODE_ENV === "production",
 
     crossSubDomainCookies: {
       enabled: false,
     },
 
-    disableCSRFCheck: true, // Allow Postman, mobile apps, no-origin requests
+    disableCSRFCheck: true,
 
     defaultCookieAttributes: {
       httpOnly: true,

@@ -73,34 +73,45 @@ var prisma = new PrismaClient({ adapter });
 
 // src/lib/auth.ts
 var auth = betterAuth({
-  // 🔴 REQUIRED for cross-origin
-  baseURL: process.env.BETTER_AUTH_URL,
-  // 🔴 REQUIRED to trust frontend
-  trustedOrigins: [process.env.FRONTEND_URL],
+  baseURL: "https://redeploy-medistore.vercel.app",
   database: prismaAdapter(prisma, {
     provider: "postgresql"
   }),
+  trustedOrigins: [
+    "https://medistore-client-side.vercel.app",
+    "http://localhost:3000"
+  ],
   emailAndPassword: {
-    enabled: true
+    enabled: true,
+    autoSignIn: true,
+    requireEmailVerification: false
   },
-  user: {
-    additionalFields: {
-      role: {
-        type: "string",
-        required: true,
-        defaultValue: "CUSTOMER"
-      }
+  /**
+   * ✅ Session config (as per guideline)
+   */
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60
+      // 5 minutes
     }
   },
-  session: {
-    expiresIn: 60 * 60 * 24 * 7
-  },
-  cookies: {
-    sessionToken: {
-      attributes: {
-        sameSite: "none",
-        secure: false
-      }
+  /**
+   * ✅ Advanced config (as per guideline)
+   */
+  advanced: {
+    cookiePrefix: "better-auth",
+    useSecureCookies: process.env.NODE_ENV === "production",
+    crossSubDomainCookies: {
+      enabled: false
+    },
+    disableCSRFCheck: true,
+    // Allow Postman, mobile apps, no-origin requests
+    defaultCookieAttributes: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+      path: "/"
     }
   }
 });
@@ -241,12 +252,24 @@ var SellerController = {
 
 // src/middlewares/auth.middleware.ts
 var verifyAuth = async (req, res, next) => {
+  console.log("\u27A1\uFE0F verifyAuth hit");
+  const cookie = req.headers.cookie;
+  console.log("\u{1F36A} Incoming cookie:", cookie);
+  if (!cookie) {
+    console.log("\u274C No cookie found on request");
+    return res.status(401).json({ message: "No cookie" });
+  }
   const session = await auth.api.getSession({
-    headers: req.headers
+    headers: {
+      cookie
+    }
   });
+  console.log("\u{1F9E0} Session result:", session);
   if (!session?.user) {
+    console.log("\u274C Session invalid or missing user");
     return res.status(401).json({ message: "Unauthorized" });
   }
+  console.log("\u2705 Authenticated user:", session.user.email);
   req.user = session.user;
   next();
 };
@@ -789,21 +812,24 @@ var CustomerRouter = router4;
 
 // src/app.ts
 var app = express5();
+app.set("trust proxy", 1);
 app.use(helmet());
 app.use(express5.json());
 app.use(cookieParser());
 var allowedOrigins = [
   process.env.APP_URL || "http://localhost:3000",
-  process.env.PROD_APP_URL
+  process.env.PROD_APP_URL || "https://medistore-client-side.vercel.app"
 ].filter(Boolean);
 app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
+      const isAllowed = allowedOrigins.includes(origin) || /^https:\/\/medistore-client-side.*\.vercel\.app$/.test(origin) || /^https:\/\/.*\.vercel\.app$/.test(origin);
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        callback(new Error(`Origin ${origin} not allowed by CORS`));
       }
-      return callback(new Error(`Origin ${origin} not allowed by CORS`));
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
@@ -817,45 +843,17 @@ app.get("/", (_req, res) => {
 app.get("/health", (_req, res) => {
   res.status(200).send("OK");
 });
-app.get("/favicon.ico", (_req, res) => {
-  res.status(204).end();
-});
-app.get("/favicon.png", (_req, res) => {
-  res.status(204).end();
-});
-app.use("/api", PublicRouter);
-app.get("/api/auth/session", async (req, res) => {
-  try {
-    const headers = new Headers();
-    Object.entries(req.headers).forEach(([key, value]) => {
-      if (typeof value === "string") {
-        headers.set(key, value);
-      }
-    });
-    const session = await auth.api.getSession({ headers });
-    if (!session?.user) {
-      return res.status(401).json({ message: "Not logged in" });
-    }
-    res.status(200).json(session);
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to get session",
-      error
-    });
-  }
-});
 app.all("/api/auth/*splat", toNodeHandler(auth));
+app.use("/api", PublicRouter);
+app.use("/api/customer", CustomerRouter);
 app.use("/api/seller", SellerRouter);
 app.use("/api/admin", AdminRouter);
-app.use("/api/customer", CustomerRouter);
-app.use(
-  (err, _req, res, _next) => {
-    console.error(err.stack);
-    res.status(err.status || 500).json({
-      message: err.message || "Server error"
-    });
-  }
-);
+app.use((err, _req, res, _next) => {
+  console.error(err);
+  res.status(500).json({
+    message: err.message || "Server error"
+  });
+});
 var app_default = app;
 
 // src/server.ts
