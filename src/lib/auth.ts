@@ -9,17 +9,15 @@ export const auth = betterAuth({
 
   trustedOrigins: async (request) => {
     const origin = request?.headers.get("origin");
-
     const allowedOrigins = [
-      process.env.FRONTEND_URL,               // https://medistore-client-side.vercel.app
-      process.env.BETTER_AUTH_URL,            // backend
-      "http://localhost:3000",
+      process.env.FRONTEND_URL, // frontend
+      process.env.BETTER_AUTH_URL, // backend
+      "http://localhost:3000", // local dev
     ].filter(Boolean);
 
     if (!origin || allowedOrigins.includes(origin) || /^https:\/\/.*\.vercel\.app$/.test(origin)) {
       return [origin];
     }
-
     return [];
   },
 
@@ -37,12 +35,18 @@ export const auth = betterAuth({
 
   session: {
     cookieCache: { enabled: true, maxAge: 7 * 24 * 60 * 60 }, // 7 days
+    cookieOptions: {
+      httpOnly: true,
+      secure: true,       // HTTPS only
+      sameSite: "none",   // ⚡ Must be None for cross-domain
+      path: "/",
+    },
   },
 
   advanced: {
     cookiePrefix: "better-auth",
     useSecureCookies: true,
-    crossSubDomainCookies: { enabled: true }, // ✅ allows frontend to send cookie
+    crossSubDomainCookies: { enabled: true },
     disableCSRFCheck: true,
   },
 });
