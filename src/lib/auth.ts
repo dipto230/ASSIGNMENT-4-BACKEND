@@ -2,7 +2,6 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
 
-
 export const auth = betterAuth({
   baseURL: "https://medistore-assignment-70.vercel.app",
 
@@ -22,13 +21,13 @@ export const auth = betterAuth({
   },
 
   advanced: {
-    cookiePrefix: "__Secure-",   
+    cookiePrefix: "__Secure-",
     defaultCookieAttributes: {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",          
-      path: "/",
+      secure: true, // using secure always
+      sameSite: "none", // same as your first snippet
+      path: "/", // keeps cookies at root path
     },
+    // You can add other advanced options here if needed
   },
 });
-
