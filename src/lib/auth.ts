@@ -3,51 +3,46 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
 
 export const auth = betterAuth({
-  
-  baseURL: "https://medistore-assignment-70.vercel.app",
+  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:5000",
 
-  // 🔥 Allowed frontend origins
-  trustedOrigins: [
-    "http://localhost:3000",
-    "https://medistore-client-side.vercel.app",
-  ],
+  database: prismaAdapter(prisma, { provider: "postgresql" }),
 
-  
-  allowMissingOrigin: true,
+  trustedOrigins: async (request) => {
+    const origin = request?.headers.get("origin");
 
-  database: prismaAdapter(prisma, {
-    provider: "postgresql",
-  }),
+    const allowedOrigins = [
+      process.env.FRONTEND_URL,               // https://medistore-client-side.vercel.app
+      process.env.BETTER_AUTH_URL,            // backend
+      "http://localhost:3000",
+    ].filter(Boolean);
 
-  emailAndPassword: {
-    enabled: true,
+    if (!origin || allowedOrigins.includes(origin) || /^https:\/\/.*\.vercel\.app$/.test(origin)) {
+      return [origin];
+    }
+
+    return [];
   },
+
+  basePath: "/api/auth",
 
   user: {
     additionalFields: {
-      role: {
-        type: "string",
-        required: true,
-        defaultValue: "CUSTOMER",
-      },
+      role: { type: "string", defaultValue: "CUSTOMER", required: false },
+      phone: { type: "string", required: false },
+      status: { type: "string", defaultValue: "ACTIVE", required: false },
     },
   },
 
+  emailAndPassword: { enabled: true, autoSignIn: true, requireEmailVerification: false },
+
   session: {
-    expiresIn: 60 * 60 * 24 * 7, 
+    cookieCache: { enabled: true, maxAge: 7 * 24 * 60 * 60 }, // 7 days
   },
 
-  
-cookies: {
-  session: {
-    name: "__Secure-better-auth.session",
-    options: {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-       path: "/",
-    },
+  advanced: {
+    cookiePrefix: "better-auth",
+    useSecureCookies: true,
+    crossSubDomainCookies: { enabled: true }, // ✅ allows frontend to send cookie
+    disableCSRFCheck: true,
   },
-},
-
 });
