@@ -6,7 +6,7 @@ import { verifyAuth } from "../middlewares/auth.middleware";
 const router: Router = express.Router();
 
 
-router.use(verifyAuth);
+// router.use(verifyAuth);
 
 
 router.get("/cart", CustomerController.getCart);

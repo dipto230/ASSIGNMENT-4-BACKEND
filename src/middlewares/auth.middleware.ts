@@ -3,10 +3,12 @@ import { NextFunction, Response } from "express";
 
 export const verifyAuth = async (req: any, res: Response, next: NextFunction) => {
   
-  const cookieHeader = req.headers.cookie || "";
+  // const cookieHeader = req.headers.cookie || "";
+ 
 
   const session = await auth.api.getSession({
-    headers: { cookie: cookieHeader },
+    // headers: { cookie: cookieHeader },
+    headers: req.headers as any
   });
 
   if (!session?.user) {

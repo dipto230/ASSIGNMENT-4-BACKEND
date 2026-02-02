@@ -18,7 +18,7 @@ app.use(helmet());
 app.use(express.json());
 app.use(cookieParser());
 
-// ✅ SIMPLE + SAFE CORS
+
 app.use(
   cors({
     origin: [
@@ -29,7 +29,9 @@ app.use(
   })
 );
 
-// health
+
+
+
 app.get("/", (_req, res) => {
   res.status(200).send("Hello Assignment 4 🚀");
 });
@@ -38,16 +40,16 @@ app.get("/health", (_req, res) => {
   res.status(200).send("OK");
 });
 
-// 🔥 AUTH MUST BE FIRST
+
 app.all("/api/auth/*", toNodeHandler(auth));
 
-// routes
+
 app.use("/api", PublicRouter);
 app.use("/api/customer", CustomerRouter);
 app.use("/api/seller", SellerRouter);
 app.use("/api/admin", AdminRouter);
 
-// error handler
+
 app.use((err: any, _req: Request, res: Response, _next: Function) => {
   console.error(err);
   res.status(500).json({
