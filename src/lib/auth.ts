@@ -3,7 +3,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
 
 export const auth = betterAuth({
-  // 🔥 MUST be backend URL
+  
   baseURL: "https://medistore-assignment-70.vercel.app",
 
   // 🔥 Allowed frontend origins
@@ -12,7 +12,7 @@ export const auth = betterAuth({
     "https://medistore-client-side.vercel.app",
   ],
 
-  // optional but OK for dev
+  
   allowMissingOrigin: true,
 
   database: prismaAdapter(prisma, {
@@ -34,12 +34,12 @@ export const auth = betterAuth({
   },
 
   session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
+    expiresIn: 60 * 60 * 24 * 7, 
   },
 
-  // 🔥 THIS IS THE CRITICAL FIX
+  
 cookies: {
-  sessionToken: {
+  session: {
     name: "__Secure-better-auth.session",
     options: {
       httpOnly: true,
