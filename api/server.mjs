@@ -81,24 +81,40 @@ var auth = betterAuth({
     "https://medistore-client-side.vercel.app",
     "http://localhost:3000"
   ],
+  // ✅ ADD THIS BLOCK (ONLY ADDITION)
+  events: {
+    async createUser({ user, request }) {
+      try {
+        const body = await request.json();
+        const role = body?.additionalFields?.role === "SELLER" ? "SELLER" : "CUSTOMER";
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { role }
+        });
+      } catch (error) {
+        console.error("Failed to assign role:", error);
+      }
+    }
+  },
+  user: {
+    additionalFields: {
+      role: {
+        type: "string",
+        required: true
+      }
+    }
+  },
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
     requireEmailVerification: false
   },
-  /**
-   * ✅ Session config (as per guideline)
-   */
   session: {
     cookieCache: {
       enabled: true,
       maxAge: 5 * 60
-      // 5 minutes
     }
   },
-  /**
-   * ✅ Advanced config (as per guideline)
-   */
   advanced: {
     cookiePrefix: "better-auth",
     useSecureCookies: process.env.NODE_ENV === "production",
@@ -106,7 +122,6 @@ var auth = betterAuth({
       enabled: false
     },
     disableCSRFCheck: true,
-    // Allow Postman, mobile apps, no-origin requests
     defaultCookieAttributes: {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",

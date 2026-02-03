@@ -14,6 +14,27 @@ export const auth = betterAuth({
     "http://localhost:3000",
   ],
 
+  
+  events: {
+    async createUser({ user, request }) {
+      try {
+        const body = await request.json();
+
+        const role =
+          body?.additionalFields?.role === "SELLER"
+            ? "SELLER"
+            : "CUSTOMER";
+
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { role },
+        });
+      } catch (error) {
+        console.error("Failed to assign role:", error);
+      }
+    },
+  },
+
   user: {
     additionalFields: {
       role: {
@@ -35,11 +56,7 @@ export const auth = betterAuth({
       maxAge: 5 * 60,
     },
 
-    fields: {
-      user: {
-        role: true,
-      },
-    },
+  
   },
 
   advanced: {
