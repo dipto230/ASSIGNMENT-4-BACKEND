@@ -12,7 +12,7 @@ router.get("/medicines/:id", PublicController.getMedicineById);
 router.get("/categories", PublicController.getCategories);
 
 router.post("/ai-chat", PublicController.aiChat);
-router.get("/smart-search", PublicController.smartSearch);
+router.get("/smart-search", PublicController);
 
 export const PublicRouter = router;
 

@@ -42,29 +42,8 @@ const getCategories = async () => {
   });
 };
 
-const searchMedicinesSmart = async (query: string) => {
-  const medicines = await prisma.medicine.findMany({
-    include: {
-      category: true,
-    },
-  });
-
-  const q = query.toLowerCase();
-
-  const filtered = medicines.filter((med) => {
-    return (
-      med.name?.toLowerCase().includes(q) ||
-      med.description?.toLowerCase().includes(q) ||
-      med.category?.name?.toLowerCase().includes(q)
-    );
-  });
-
-  return filtered.slice(0, 10);
-};
-
 export const PublicService = {
   getMedicines,
   getMedicineById,
   getCategories,
-  searchMedicinesSmart
 };

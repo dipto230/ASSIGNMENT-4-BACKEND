@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { PublicService } from "./public.service";
-import { getAIResponse, getMedicineRecommendation } from "../../lib/ai";
 
 
 const getMedicines = async (req: Request, res: Response) => {
@@ -40,7 +39,7 @@ const getCategories = async (_req: Request, res: Response) => {
 };
 
 
- const aiChat = async (req: Request, res: Response) => {
+export const aiChat = async (req: Request, res: Response) => {
   try {
     const { message } = req.body;
 
@@ -63,42 +62,8 @@ const getCategories = async (_req: Request, res: Response) => {
   }
 };
 
-const smartSearch = async (req: Request, res: Response) => {
-  try {
-    const { query } = req.query;
-
-    if (!query || typeof query !== "string") {
-      return res.status(400).json({
-        message: "Query is required",
-      });
-    }
-
-    
-    const medicines =
-      await PublicService.searchMedicinesSmart(query);
-
-
-    const aiResponse = await getMedicineRecommendation(
-      query,
-      medicines
-    );
-
-    res.json({
-      success: true,
-      medicines,
-      recommendation: aiResponse,
-    });
-  } catch (err) {
-    res.status(500).json({
-      message: "Smart search failed",
-    });
-  }
-};
-
 export const PublicController = {
   getMedicines,
   getMedicineById,
   getCategories,
-  aiChat,
-  smartSearch
 };

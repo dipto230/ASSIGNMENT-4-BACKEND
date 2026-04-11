@@ -100,5 +100,4 @@ export const PublicController = {
   getMedicineById,
   getCategories,
   aiChat,
-  smartSearch
 };

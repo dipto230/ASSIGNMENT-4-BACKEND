@@ -73,7 +73,7 @@ const smartSearch = async (req: Request, res: Response) => {
       });
     }
 
-    
+    // 🔍 Step 1: DB search
     const medicines =
       await PublicService.searchMedicinesSmart(query);
 
@@ -100,5 +100,4 @@ export const PublicController = {
   getMedicineById,
   getCategories,
   aiChat,
-  smartSearch
 };

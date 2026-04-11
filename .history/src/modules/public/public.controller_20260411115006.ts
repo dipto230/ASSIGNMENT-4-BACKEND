@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { PublicService } from "./public.service";
-import { getAIResponse, getMedicineRecommendation } from "../../lib/ai";
+import { getAIResponse } from "../../lib/ai";
 
 
 const getMedicines = async (req: Request, res: Response) => {
@@ -73,11 +73,11 @@ const smartSearch = async (req: Request, res: Response) => {
       });
     }
 
-    
+    // 🔍 Step 1: DB search
     const medicines =
       await PublicService.searchMedicinesSmart(query);
 
-
+    // 🧠 Step 2: AI recommendation
     const aiResponse = await getMedicineRecommendation(
       query,
       medicines
@@ -100,5 +100,4 @@ export const PublicController = {
   getMedicineById,
   getCategories,
   aiChat,
-  smartSearch
 };
